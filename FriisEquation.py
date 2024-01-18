@@ -1,21 +1,10 @@
 import numpy as np
 
+from flask import Flask, render_template, request
+
+app = Flask(__name__)
+
 def friis_equation_with_ground_presence(h1, h2, d, freq, er, pol):
-    """
-    Calculate the loss of a radio link with ground presence.
-
-    Parameters:
-    - h1: Transmitting antenna elevation above ground.
-    - h2: Receiving antenna elevation above ground.
-    - d: Distance between the two antennas (projected onto the ground plane).
-    - freq: Signal frequency in Hz.
-    - er: Relative permittivity of the ground.
-    - pol: Polarization of the signal ('H' for horizontal, 'V' for vertical).
-
-    Returns:
-    - Total_received_energy_dBm: Total received energy in dBm.
-    """
-
     c = 299972458e6
     Gr = 1
     Gt = 1
@@ -43,13 +32,21 @@ def friis_equation_with_ground_presence(h1, h2, d, freq, er, pol):
 
     return Total_received_energy_dBm
 
-# Example usage:
-h1 = 10
-h2 = 5
-d = 100
-freq = 2.4e9
-er = 4
-pol = 'H'
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-result = friis_equation_with_ground_presence(h1, h2, d, freq, er, pol)
-print(result)
+@app.route('/calculate', methods=['POST'])
+def calculate():
+    h1 = float(request.form['h1'])
+    h2 = float(request.form['h2'])
+    d = float(request.form['d'])
+    freq = float(request.form['freq'])
+    er = float(request.form['er'])
+    pol = request.form['pol']
+
+    result = friis_equation_with_ground_presence(h1, h2, d, freq, er, pol)
+    return str(result)
+
+if __name__ == '__main__':
+    app.run(debug=True)
