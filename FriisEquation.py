@@ -1,8 +1,10 @@
 import numpy as np
-
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, resources={r"/calculate": {"origins": "*"}})
+
 
 def friis_equation_with_ground_presence(h1, h2, d, freq, er, pol):
     c = 299972458e6
@@ -38,15 +40,21 @@ def index():
 
 @app.route('/calculate', methods=['POST'])
 def calculate():
-    h1 = float(request.form['h1'])
-    h2 = float(request.form['h2'])
-    d = float(request.form['d'])
-    freq = float(request.form['freq'])
-    er = float(request.form['er'])
-    pol = request.form['pol']
+    try:
+        data = request.get_json()
+        h1 = float(data['h1'])
+        h2 = float(data['h2'])
+        d = float(data['d'])
+        freq = float(data['freq'])
+        er = float(data['er'])
+        pol = data['pol']
 
-    result = friis_equation_with_ground_presence(h1, h2, d, freq, er, pol)
-    return str(result)
+        # Call your existing Friis equation function
+        result = friis_equation_with_ground_presence(h1, h2, d, freq, er, pol)
+
+        return jsonify(result=result)
+    except Exception as e:
+        return jsonify(error=str(e)), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
